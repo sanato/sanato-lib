@@ -7,9 +7,11 @@ import (
 )
 
 type config struct {
-	Maintenance bool   `json:"maintenance"`
-	ReadOnly    bool   `json:"readOnly"`
-	RootDataDir string `json:"rootDataDir"`
+	Maintenance      bool   `json:"maintenance"`
+	ReadOnly         bool   `json:"readOnly"`
+	RootDataDir      string `json:"rootDataDir"`
+	TokenSecret      string `json:"tokenSecret"`
+	TokenCipherSuite string `json:"tokenCipherSuite"`
 }
 
 type ConfigProvider struct {
