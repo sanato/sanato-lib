@@ -52,7 +52,7 @@ func (a *AuthProvider) Authenticate(username, password string) (*AuthResource, e
 	type user struct {
 		Username    string `json:"username"`
 		Password    string `json:"password"`
-		DisplayName string `json:"display_name"`
+		DisplayName string `json:"displayName"`
 		Email       string `json:"email"`
 	}
 	users := make([]*user, 0)
