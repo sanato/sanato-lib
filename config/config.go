@@ -8,6 +8,7 @@ import (
 
 type config struct {
 	Maintenance      bool   `json:"maintenance"`
+	Port             int    `json:"port"`
 	ReadOnly         bool   `json:"readOnly"`
 	RootDataDir      string `json:"rootDataDir"`
 	TokenSecret      string `json:"tokenSecret"`
