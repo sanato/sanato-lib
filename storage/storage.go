@@ -22,16 +22,23 @@ type MetaData struct {
 	Extra        interface{} `json:"extra"` // maybe to save xattrs or custom user data
 }
 
-func NewStorageProvider(rootDataDir string) (*StorageProvider, error) {
-	return &StorageProvider{rootDataDir}, nil
+func NewStorageProvider(rootDataDir, rootTempDir string) (*StorageProvider, error) {
+	return &StorageProvider{rootDataDir, rootTempDir}, nil
 }
 
 type StorageProvider struct {
 	rootDataDir string
+	rootTempDir string
+}
+
+func (sp *StorageProvider) internalMove(from, to string) error {
+	tofullpath := filepath.Join(sp.rootDataDir, "/", to)
+	return os.Rename(from, tofullpath)
 }
 
 func (sp *StorageProvider) PutFile(path string, r io.Reader, size int64) error {
-	fullpath := filepath.Join(sp.rootDataDir, "/", path)
+	//fullpath := filepath.Join(sp.rootTempDir, "/", path)
+	fullpath := filepath.Join(sp.rootTempDir, "/", filepath.Base(path))
 
 	fd, err := os.Create(fullpath)
 	defer fd.Close()
@@ -46,8 +53,11 @@ func (sp *StorageProvider) PutFile(path string, r io.Reader, size int64) error {
 	*/
 
 	_, err = io.Copy(fd, r)
-	return convertError(err)
+	if err != nil {
+		return convertError(err)
+	}
 
+	return convertError(sp.internalMove(fullpath, path))
 	/*if checksumType == "md5" {
 		sum := md5.Sum(data)
 		if fmt.Sprintf("%x", sum) != checksum {
