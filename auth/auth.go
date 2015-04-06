@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"code.google.com/p/go.crypto/bcrypt"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -8,6 +9,14 @@ import (
 
 	"github.com/Sirupsen/logrus"
 )
+
+// User reprents a user saved in the auth file
+type User struct {
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	DisplayName string `json:"displayName"`
+	Email       string `json:"email"`
+}
 
 // AuthResource represents the user after a valid authentication
 // EntityId is the primary identifier
@@ -49,23 +58,43 @@ func (a *AuthProvider) Authenticate(username, password string) (*AuthResource, e
 		return nil, err
 	}
 	data, err := ioutil.ReadAll(fd)
-	type user struct {
-		Username    string `json:"username"`
-		Password    string `json:"password"`
-		DisplayName string `json:"displayName"`
-		Email       string `json:"email"`
-	}
-	users := make([]*user, 0)
+
+	users := make([]*User, 0)
 	err = json.Unmarshal(data, &users)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
 	}
+
 	for _, user := range users {
-		if user.Username == username && user.Password == password {
+		if user.Username == username && bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil {
 			authRes := newAuthResource(user.Username, user.DisplayName, user.Email)
 			return authRes, nil
 		}
 	}
 	return nil, errors.New("user not found")
+}
+func (ap *AuthProvider) ExistsAuth() error {
+	_, err := os.Open(ap.authFile)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ap *AuthProvider) CreateUser(user *User) error {
+	users := []*User{user}
+	fd, err := os.Create(ap.authFile)
+	if err != nil {
+		return err
+	}
+	data, err := json.Marshal(users)
+	if err != nil {
+		return err
+	}
+	_, err = fd.Write(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
