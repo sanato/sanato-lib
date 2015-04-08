@@ -15,6 +15,9 @@ type Config struct {
 	RootTempDir      string `json:"rootTempDir"`
 	TokenSecret      string `json:"tokenSecret"`
 	TokenCipherSuite string `json:"tokenCipherSuite"`
+	ServeWeb         string `json:"serveWeb"`
+	WebDir           string `json:"webDir"`
+	WebURL           string `json:"webUR"`
 }
 
 type ConfigProvider struct {
